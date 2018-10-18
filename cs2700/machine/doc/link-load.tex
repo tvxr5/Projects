@@ -1,0 +1,59 @@
+\documentclass {article}
+\author {M.~W.~Schulte}
+\title {The Format of the {\tt .o} File}
+\include {mydefs}\fullpage
+\begin{document}
+\maketitle
+
+The object file is an ASCII file containing  the generated code with 
+intermixed directives to the linker/loader.
+
+The instructions can be either written as approved memonics (in all upper
+case) or as the equivalent numbers.  The arguements are numbers or symbols.
+the forward references are handled automatically.
+
+A number followed immediately by a colon (``:'') 
+(no space between number and colon) is taken as a command 
+to change the next storage location (PC)  to the number 
+plus the start address of the module [specify the load address].  
+The initial load address is taken to be location 0 in the code section. 
+
+Ther are a series of linker/loader directives:\begin {description}
+\item [{\tt .CODE}] indicates that the loading is to be done to the 
+code section [the initial default].  
+\item [{\tt .DATA}] indicates that 
+the loading is to be done to the data section.
+\item [{\tt .ENTRY}] followed by a number or symbol indicates the 
+(relocatable) entry point.
+\item [{\tt .EXTERN}] followed by a name and a parenthesized
+list of numbers indicates that the name is an external symbol used at the
+relative code locations in the list of value.
+\item [{\tt .RELOCs}] where {\tt s} can be {\tt B}, {\tt W}, {\tt L}, or 
+{\tt Q}, followed by a parenthesized list of numbers indicates
+that the (relocatable) locations specified in the list 
+in the current section need to be relocated.
+\item [{\it name}:] (no space between name and colon) denotes a global symbol 
+whose value is the (relocatable) current location in the current section.
+The loader complains if you try to redefine the name, and uses the first 
+occurence.
+\item [{\it name}=] (no space before the equal sign)
+followed by a name or a number 
+denotes a global symbol whose value is value of arguement.
+You can redefine the name.
+\end {description}
+\pagebreak
+
+\zB,\\
+SIZE = 512 .CODE 0: LPUTW HALT\\ 
+A: PUSHW 0 PUSHW B PUSHW 0 PUSHW Z LGETW PUSHW SIZE MULTI \\
+PUSHQ 0 GOTO\\
+.ENTRY A .DATA 4: A: 32W 16: B: 25678912L
+
+sets SIZE to the value 512, starts the CODE section (done by default also),
+puts a series of instructions into the code section, declares the symbol A 
+to have value 2 [PC at that point is 2], declares that the entry point is 
+the label A [2 in the CODE section], switches to the DATA section, moves to 
+location 4, declares a label Z with that value and puts the word 32 there, 
+then moves to location 16, declares a label B and 
+puts the longword 25678912 there.
+\end{document}

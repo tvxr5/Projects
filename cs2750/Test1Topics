@@ -1,0 +1,48 @@
+10 quesitons- + 1 Extra Credit
+75 min
+
+1.File Permissions - setting them--UMASK??
+2.Grep-- Search for some string  /// may also talk about egrep
+3.Find ---" Some sort of extentsion " ie .exe, .c
+4.Tar - What is it, how is it used. --Understand options XVF; CVF 
+5.Sed - replacing or searching
+6.Awk - can create scripts- searching and replacing, similar to grep and sed. 
+7. Write the output of cammands--- and/or scripts
+8.BASH SHELL -- Variables -- Maybe writing a bash script for certain putput
+9. Know the Commands ie, Test etc. 
+10. Regualr expressions--used to write awk and sed --- very important to
+understand. 
+
+//Write a script that removes the lines that include "Linux"
+//In some file lin.sh
+\<Linux\>/d
+then sed -f lin.sh some.txt
+
+//Display the lines in readme.txt that start with A or S.
+grep '^[AS]' readme.txt
+
+//Display All lines that end with a comma. 
+grep ',$' readme.txt
+
+//Display all the lines that have int or float
+egrep 'int|float' readme.txt
+
+//what would be the outcome of 
+
+$a=100
+$A="$a students"
+echo '$A'
+
+//In a file 
+#!/bin/bash
+echo $1 $3
+script.sh 
+It would echo $1-- check though-- not sure
+
+//display a list of files with  .c and .cpp in current or subdirectory (find) 
+find ./ -name "*.c" -o -name "*.cpp"
+
+// write an awk command that displays each line in readme.txt that
+// has more than 5 words. 
+awk 'NF>5' readme.txt
+  

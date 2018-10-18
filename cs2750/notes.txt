@@ -1,0 +1,5 @@
+These are some notes for class. 
+
+modify the .bashrc file to get some aliases for basic commands. 
+look at the slides
+

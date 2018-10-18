@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ $# -gt 0 ]
+   then
+   
+   if [ $1 == "start" ]
+       then
+       git init
+   fi
+
+   if [ $1 == "pushall" ] && [ $# -gt 1 ]
+      then
+      comment=""
+      i=1
+      for var in $@;
+      do
+         if [ $i -gt 1 ]
+            then
+            comment+=$var" "
+         fi
+         i=`expr $i + 1`
+      done
+
+      git add *
+      git commit -m "$comment"
+
+      echo -e "\n\n\n\nAdded and commited all files\nWhat branch should this be pushed to?"
+      echo "('master' is reccomended.)"
+      
+      branch=""
+      read branch
+
+      git push origin $branch
+   fi
+fi

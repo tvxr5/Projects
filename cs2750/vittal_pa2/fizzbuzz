@@ -1,0 +1,24 @@
+#!/bin/bash
+
+
+num=$1
+# makes sure number is positive
+if [[ "$#" < 1 ]] 
+  then
+    num=20 #default value if number is not specified or negative
+fi
+
+for (( i=1; i<=num; i++ )){ #checks number to see if they are divisible by both 3 and 5. 
+  if [[ i%3 -eq 0 && i%5 -eq 0 ]]
+    then
+      echo "FizzBuzz" # Prints FizzBuzz in the place of the number 3 and 5.
+  elif [[ $i%3 -eq 0 ]] # Checks if number is divisible by 3 and Prints Fizz in place of such a number. 
+    then
+      echo "Fizz"
+  elif [[ $i%5 -eq 0 ]] #Checks if number is divisible by 5 and prints Buzz in place of such a number
+    then
+      echo "Buzz"
+  else
+      echo "$i" # prints all other regular numbers, normally till number specified or default value. 
+fi
+}

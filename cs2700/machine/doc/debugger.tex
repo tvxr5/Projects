@@ -1,0 +1,141 @@
+\documentclass {report}
+\author {M.~W.~Schulte}
+\include {mydefs}\fullpage
+\begin {document} \parindent 0em \parskip 1em
+\section {The Commands Available}
+
+The program presents a series of menus to guide you through
+a session. 
+
+On the main menu, you see:\begin {description}
+\item[Q] to Quit the emulator
+\item[L list] to Load modules.  You follow the letter with a list of files
+that contain the modules desired, in the LINK-LOAD format.  Further L
+commands append their modules to the modules already loaded.
+\item[ST \#] to single STep the program.  You follow the command with the 
+number of instructions to step.  
+\item[R] to Run the program to the end.  Typing a control-C interrupts 
+the run.
+\item[ZP] to erase the modules already entered. (Zero Program).
+\item[SH] to display the SHow menu.
+\item[CH] to display the CHange menu.
+\item[BK] to display the BreaKpoint menu.
+\end {description}
+
+On the show menu, you see:\begin {description}
+\item[SI] Show next Instruction to execute
+\item[SC \# \#] Show contents of Code space.  
+The next word is the start location, either as a number or the name of 
+a symbol in the symbol table.  The final word is the ending value, 
+either as a number, the name of a symbol in the symbol table, or a 
+plus sign and the number of entries to display 
+[no space between the plus sign and the number].
+\item[SD \# \#] Show contents of Data space.  
+The next word is the start location, either as a number or the name of 
+a symbol in the symbol table.  The final word is the ending value, 
+either as a number, the name of a symbol in the symbol table, or a 
+plus sign and the number of entries to display 
+[no space between the plus sign and the number].
+\item[SF \# \#] Show a Frame variable.  You follow the command with
+the frame number and the offset.  It show only the word at that address.
+\item[SS] Show the Stack (the top 20 elements if the stack contains more).  
+The entries are words; TOS is to the right.
+\item[SY] show the SYmbol table (linker's symbol table).
+\end {description}
+
+On the change menu, you see:\begin {description}
+\item[CI] Change the next Instruction. Not Implemented.
+\item[CC \#] Change the Code space. 
+You follow with either a code space
+address or the name of a symbol in the symbol table.  The emulator will 
+respond with the address and current contents in hex of that address; 
+you type the new contents in hex (you must type something, 
+even if it is the same).
+It repeats this with successive locations, until you type the escape 
+key as the new value.  (That location doesn't change.)
+\item[CD \#] Change the Data space. Not Implemented.
+You follow with either a data space
+address or the name of a symbol in the symbol table.  The emulator will 
+respond with the address and current contents in hex of that address; 
+you type the new contents in hex (you must type something, 
+even if it is the same).
+It repeats this with successive locations, until you type the escape 
+key as the new value.  (That location doesn't change.)
+\item[CF] Change a Frame variable. Not Implemented.
+\item[CS] Change the Stack.  Not Implemented.
+\end {description}
+
+On the breakpoint menu, you see:\begin {description}
+\item[BT \#] Breakpoint seT.  You follow with either the code space 
+address or the name of a symbol in the symbol table of the location 
+at which you wish a breakpoint.
+\item[BS] Breakpoint Show.  Prints all the active breakpoints.
+\item[BC \#] Breakpoint Change.  You follow with the address or symbol
+name of the breakpoint you want removed.
+\item[BZ] Breakpoint Zero.  Delete all breakpoints
+\end {description}
+
+The following are available, but are not on any menu.\begin {description}
+\item[M] display the main Menu.
+\item[SL] to enter SiLent mode. Menus are not displayed, nor are the
+instructions as they are executed.
+\item[V] to enter Verbose mode.  Menus are displayed, as are instructions 
+as they execute.
+\end {description}
+
+
+
+\section {The Format of the LINK-LOAD File}
+
+The object file is an ASCII file containing  the generated code with 
+intermixed directives to the linker/loader.
+
+The instructions can be either written as approved memonics (in all upper
+case) or as the equivalent numbers.  The arguments are numbers or symbols.
+the forward references are handled automatically.
+
+A number followed immediately by a colon (``:'') 
+(no space between number and colon) is taken as a command 
+to change the next storage location (PC)  to the number 
+plus the start address of the module [specify the load address].  
+The initial load address is taken to be location 0 in the code section. 
+
+There are a series of linker/loader directives:\begin {description}
+\item [{\tt .CODE}] indicates that the loading is to be done to the 
+code section [the initial default].  
+\item [{\tt .DATA}] indicates that 
+the loading is to be done to the data section.
+\item [{\tt .ENTRY}] followed by a number or symbol indicates the 
+(relocatable) entry point.
+\item [{\tt .EXTERN}] followed by a name and a parenthesized
+list of numbers indicates that the name is an external symbol used at the
+relative code locations in the list of value.
+\item [{\tt .RELOCs}] where {\tt s} can be {\tt B}, {\tt W}, {\tt L}, or 
+{\tt Q}, followed by a parenthesized list of numbers indicates
+that the (relocatable) locations specified in the list 
+in the current section need to be relocated.
+\item [{\it name}:] (no space between name and colon) denotes a global symbol 
+whose value is the (relocatable) current location in the current section.
+The loader complains if you try to redefine the name, and uses the first 
+occurrence.
+\item [{\it name}=] (no space before the equal sign)
+followed by a name or a number 
+denotes a global symbol whose value is value of argument.
+You can redefine the name.
+\end {description}
+% \pagebreak
+
+\zB,\\
+SIZE= 512 .CODE 0: LPUTW HALT\\ 
+A: PUSHW 0 PUSHW B PUSHW 0 PUSHW Z LGETW PUSHW SIZE MULTI \\
+PUSHQ 0 GOTO\\
+.ENTRY A .DATA 4: a: 32W 16: b: 25678912L
+
+sets SIZE to the value 512, starts the CODE section (done by default also),
+puts a series of instructions into the code section, declares the symbol A 
+to have value 2 [PC at that point is 2], declares that the entry point is 
+the label A [2 in the CODE section], switches to the DATA section, moves to 
+location 4, declares a label Z with that value and puts the word 32 there, 
+then moves to location 16, declares a label B and 
+puts the longword 25678912 there.
+\end{document}

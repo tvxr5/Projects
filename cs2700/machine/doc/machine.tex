@@ -1,0 +1,262 @@
+\documentclass{article}
+\author {M.~W.~Schulte}
+\title {Introduction to Schulte's Machine}
+\def\instr#1#2#3#4#5#6{\hspace*{2em}\makebox[1.5in][l]{\bf #1} {\tt #2}\\
+						\hspace*{5em}\makebox[1in][l]{args= #3}
+						\hspace*{.75in}\makebox[2in][l]{stack= #4 -- #5}
+						\begin{quotation}#6\end{quotation}}
+\def\bs{$\backslash$}
+\begin{document} \parindent 0pt \parskip 1ex
+\include {mydefs}\fullpage
+\section{The Machine Architecture}
+The machine, to the programmer, looks as if it were composed of
+three sections:\begin {itemize}
+\item Code Space:
+a section of byte-addressable RAM, addressed by 64-bit addresses.
+All executable code must be in this section; the operating
+system can mark this section read-only in some cases.
+There is an internal register PC (not accessible to the programmer)
+which points to the next instruction to execute.
+Any data in the code section is accessed
+either by explicit 64-bit address, or by 16-bit offset from PC.
+In all cases, this offset is from the PC of the byte following the word
+containing the offset [PC of the next instruction].
+\item Data Space:
+a section of byte-addressable RAM, addressed by 64-bit addresses.
+There is provision for "short" addresses;  short addresses are 16-bit
+addresses, and behave as a 64-bit address with the top 48 bits set to zero.
+This section is meant for use by the static variables and the heap.
+All objects are access by explicit address.
+\item Stack: a section of word-addressable stack.
+This serves as both the work space for all operations, and the storage
+for the local variables in all modules.
+There is an internal register SP (not accessible to the programmer)
+to access the top of the stack; there are instructions to
+push items of the stack and to change the value of SP.
+There is also an internal array of frame pointers (also not directly
+accessible to the programmer) with instructions to set and release frames
+by manipulating the values in the frame pointer array.
+\end{itemize}
+
+\section{Data Formats}
+For all sections of memory, the data is stored in a "little-endian" manner:
+the least significant byte (or word) is stored at the smallest address;
+the successive bytes (or words) are stored at progressively higher
+addresses.  Since the code and data spaces are byte-addressable, but the
+stack is word-addressible, we will not define the contents of the upper
+byte on the stack of the result of the movement of a byte onto the stack
+(and the programmer should not rely on any particular value),
+and the upper byte is ignored on a movement of a byte off of the stack.
+
+There are three integer formats: character, integer, and long integer.
+A character integer is a byte long, and is meant to allow operations
+on characters, \`{a} la C characters.  It also allows character comparisons
+in any language.
+A regular integer is a word long.  It is a twos-complement signed integer.
+A long integer is a quadword (64 bits) long.  It also is a twos-complement
+signed integer.
+
+There is one floating point format.  It occupies a longword, and uses
+the floating point format on the underlying machine (yes, I know this is
+not portable.)
+
+\section{The Instructions}
+In many of the machine instruction formats, there is referrence to
+the quantity {\bf l} with a corresponding field {\tt ll} in the
+machine format; this is a field to indicate the length of the
+item:
+\begin{tabular}[t]{l|l}{\bf l}&{\tt ll}\\W&00\\L&01\\Q&10\\B&11\\O&11
+\end{tabular}; O is used for {\bf DUPl} and {\bf SWAPl}, B is used with
+the other instructions.\\
+The instruction field {\bf t} is also used, with the machine format
+field {\tt tt}; this indicates data type:
+\begin{tabular}[t]{l|l}{\bf t}&{\tt tt}\\I&00\\L&01\\F&10\\C&11
+\end{tabular}
+
+\small
+\subsection{Reserved Instructions}
+\instr{HALT}		{0000 0000} {} {} {}
+	{Halts the machine.  For non-priveledged processes, the exception
+	handler terminates the program.}
+\instr{SYSCALL}	{0000 0001} {} {call dependent values \bs\ type}
+		{call dependent results}
+	{\mbox{}}
+\instr{SYSRET}	{0000 0010} {} {} {}
+	{For internal use only}
+%\instr{TRACE}	{0000 0011} {} {} {}
+%	{For internal use only}
+
+\subsection{PC Relative Instructions}
+\instr{RGETl}	{0001 00ll}	{w\_PC\_offset} {} {value}
+	{Get the value of a variable and put it on the top of the stack.}
+\instr{RPUTl}	{0001 01ll}	{w\_PC\_offset} {value} {}
+	{Put the value on the top of the stack into a variable.}
+\instr{RGOTO}	{0001 1000} {w\_PC\_offset} {} {}
+	{Go to the instruction whose code space address is the sum of the
+	w\_PC\_offset and the PC of the next instruction.}
+\instr{RGOSUB}	{0001 1001} {w\_PC\_offset} {} {q\_ret\_addr}
+	{Push the address of the next instruction on the stack, then go to 
+	the instruction whose address is the sum of that address and 
+	w\_PC\_offset.}
+\instr{RGOZ}	{0001 1010} {w\_PC\_offset} {w\_flag} {}
+	{If w\_flag is a zero word [all zeroes], then go to the instruction 
+	whose address is the sum of the w\_PC\_offset and the address of the 
+	next instruction.}
+\instr{RPUSHA}	{0001 1011} {w\_PC\_offset} {} {q\_c\_addr}
+	{Push the code space address formed by adding the address of the next 
+	instruction and the w\_PC\_offset.}
+\instr{PUSHl}		{0001 11ll}	{value} {} {value}
+	{Push the argument (whose length is $l$) onto the top of the stack.  
+	[Push Immediate]}
+
+\subsection{Code Space Instructions}
+\instr{CGETl}	{0010 00ll}	{} {q\_c\_address} {value}
+	{Get the value at the location whose code space address is on the 
+	top of the stack, and put it on the top of the stack.}
+\instr{CPUTl}	{0010 01ll}	{} {q\_c\_address \bs\ value} {}
+	{Put the value on the top of the stack into the location
+	whose code space address is the second on the stack.}
+\instr{GOTO}	{0010 1000} {} {q\_c\_addr} {}
+	{Go to the instruction whose code space address is on the 
+	top of the stack.}
+\instr{RET}		{0100 1000} {} {q\_c\_addr} {}
+	{Same as GOTO; introduced for conveience of the programmer.}
+\instr{GOSUB}	{0010 1001} {} {q\_c\_addr} {q\_ret\_addr}
+	{Pop a quad-word from the stack, push the code space address of the 
+	next instruction, then go to the instruction whose code space address
+	is the quad-word that was originally popped.}
+\instr{GOZ}		{0100 1010} {} {q\_c\_addr \bs\ w\_flag} {}
+	{If w\_flag is a zero word [all zeroes], then goto the instruction
+	whose code space address is the second on the stack.}
+
+\subsection{Data Space Instructions}
+\instr{GETSl}	{0011 00ll}	{} {w\_d\_address} {value}
+	{Get the value at the location whose (16-bit) data space address
+	is on the top of the stack, and put it on the top of the stack.}
+\instr{PUTSl}	{0011 01ll}	{} {w\_d\_address \bs\ value} {} 
+	{Put the value on the top of the stack into the location whose
+	(16-bit) data space location is the second on the stack.}
+\instr{GETFl}	{0011 10ll}	{} {q\_d\_address} {value}
+	{Get the value at the location whose (64-bit) data space address 
+	is on the top of the stack, and put it on the top of the stack.}
+\instr{PUTFl}	{0011 11ll}	{} {q\_d\_address \bs\ value} {} 
+	{Put the value on the top of the stack into the location whose 
+	(64-bit) data space location is the second on the stack.}
+
+\subsection{Frame Instructions}
+\instr{LGETSl}  {0100 00ll} {} {w\_frame \bs\ w\_offset} {value}
+	{Get the value at the location whose frame is second on stack and
+	whose (16-bit) signed offset is on the top of the stack, and put
+	the value on the top of stack.}
+\instr{LPUTSl}  {0100 01ll} {} {w\_frame \bs\ w\_offset \bs\ value} {}
+	{Put the value on the top of the stack into the location whose
+	frame is third on stack and whose (16-bit) offset is second on
+	the stack.}
+\instr{LGETFl}  {0100 10ll} {} {w\_frame \bs\ q\_offset} {value}
+	{Get the value at the location whose frame is second on stack and
+	whose (64-bit) signed offset is on the top of the stack, and put
+	the value on the top of stack.}
+\instr{LPUTFl}  {0100 11ll} {} {w\_frame \bs\ q\_offset \bs\ value} {}
+	{Put the value on the top of the stack into the location whose
+	frame is third on stack and whose (64-bit) offset is second on
+	the stack.}
+
+\subsection{Arithmetic Instructions}
+\instr{ADDt}    {0101 00tt} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form the sum value1 + value2,
+	and put result onto stack.}
+\instr{SUBt}    {0101 01tt} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form the difference value1 - value2,
+	and put result onto stack.}
+\instr{MULt}    {0101 10tt} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form the product value1 * value2,
+	and put result onto stack.}
+\instr{DIVt}    {0101 11tt} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form the quotient value1 / value2,
+	and put result onto stack.  For types I, L, and C, the result is
+	the quotient with no remainder; for the type F, the result is the 
+	representation of the real-number division.  (Division of long integers
+	is not currently supported.)}
+
+\subsection{Bit Instructions}
+\instr{ANDl}   {0110 00ll} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form value1 AND value2 bit by bit,
+	and put result onto stack.}
+\instr{ORl}   {0110 01ll} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form value1 OR value2 bit by bit,
+	and put result onto stack.}
+\instr{XORl}   {0110 10ll} {} {value1 \bs\ value2} {result}
+	{Take top two values off stack, form value1 XOR value2 bit by bit,
+	and put result onto stack.}
+\instr{NOTl}   {0110 11ll} {} {value} {result}
+	{Take the top value from the stack, complement all the bits, and
+	put result onto stack.}
+
+\subsection {Stack Manipulation}
+\instr{CSFTl}   {0111 00ll} {} {value \bs\ amt} {result}
+	{Do a "circular shift".  If the value of amt is positive,
+	shift to the left; if the value of amt is negative, shift to the right.
+	every bit shifted off one end is replaced at the other end.}
+\instr{ASFTl}   {0111 01ll} {} {value \bs\ amt} {result}
+	{Do an "arithmetic shift".  If the value of amt is positive, shift 
+	the value to the left, dropping the left-most bits from the value
+	and placing 0's on the right side.  If the value of amt is negative,
+	shift the value to the right with sign extention.}
+\instr{TSTEQt}   {0111 10tt} {} {value} {flag}
+	{If the value on the stack is equal to zero, push TRUE (-1), 
+	else push FALSE (0).}
+\instr{TSTLTt}   {0111 11tt} {} {value} {flag}
+	{If the value on the stack is less than zero, push TRUE (-1), 
+	else push FALSE (0).}
+\instr{DUPl}   {1000 00ll} {} {value} {value \bs\ value}
+	{Duplicate the value on the top of the stack.  This instruction uses
+	the length specifier {\bf O} in place of {\bf B}; this is to allow
+	the programmer to duplicate a pair of quadwords.}
+\instr{SWAPl}   {1000 01ll} {} {value1 \bs\ value2} {value2 \bs\ value1}
+	{Swap the top two elements oh the stack.  This instruction also uses
+	the length specifier {\bf O} in place of {\bf B}; this allows the
+	programmer to swap a pair of quadwords.}
+\instr{CSHPx}   {1000 100y} {} {amt} {}
+	{Add the signed value on the top of the stack to the Stack Pointer.
+	The value of {\bf x} can be {\bf S} ({\tt y} = 0) to indicated that
+	the value is a word value (sign extended to 64 bits) or 
+	{\bf x} can be {\bf F} ({\tt y} = 1) to indicate that 
+	the value is a quadword.}
+\instr{NEWFR}   {1000 1010} {frame} {} {ofp}
+	{Take the next word in the instruction stream as an index into the 
+	Frame Pointer array.  Push the value at that index in the Frame Pointer 
+	array on the stack, then
+	insert the (new) value of SP into that location in the FP array.}
+\instr{RESFR}   {1000 1011} {frame} {ofp \bs\ local stuff} {}
+	{Take the next word in the instruction stream as an index into the
+	Frame Pointer array.  Replace SP by the value at that index in the FP
+	array (effectively discarding the "local stuff"), then pop the (new) 
+	top of the stack into that location in the FP array.}
+
+\subsection {Conversion Instructions}
+\instr{CVTt$\mbox{}_1$t$\mbox{}_2$}
+			{1001 t$\mbox{}_1$t$\mbox{}_1$t$\mbox{}_2$t$\mbox{}_2$}
+			{} {value} {value}
+	{Convert the value of type $t_1$ to the equivalent value of type $t_2$.
+	If $t_1$ and $t_2$ are both integer types, then if $t_1$ is a smaller
+	type than $t_2$, the conversion is by sign extention, else the conversion
+	is by truncation.  If $t_1$ is an integer type and $t_2$ is {\tt F}, then
+	then corresponding floating value is produced, with possible loss of the
+	less significant digits (every integer type will fit into a float).
+	If $t_1$ is {\tt F} and $t_2$ is an integer type, then conceptually the
+	float is converted to an infinite precision integer, then truncated if
+	need be to fit into type $t_2$. ($t_1$ and $t_2$ are NOT the same type.)}
+\instr{ADRD}		{1001 0000} {} {q\_d\_address} {q\_universal\_address}
+	{The quad-size data address is converted into a quad-size generic address
+	(actually, the same address).}
+\instr{ZEXWQ}		{1001 0101} {} {w\_value} {q\_value}
+	{The word-size value on the stack is extended with zeros to a quad-size
+	value.  (The initial and final values are identical as unsigned integers.)}
+\instr{ADRC}		{1001 1010} {} {q\_c\_address} {q\_universal\_address}
+	{The quad-size code address is converted into a quad-size generic address.}
+\instr{ADRF}		{1001 1111} {} {q\_d\_address} {q\_universal\_address}
+	{The frame address with quad-size offset is converted into a quad-size
+	generic address.  (Note: the frame number of any frame address is always
+	a word.)}
+
+\end{document}

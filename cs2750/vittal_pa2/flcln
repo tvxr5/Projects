@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "The files below are organized by file size"
+find . -type f -printf "%s\t%p\n" | sort -n
+echo "The files below are of size zero"
+find . -type f -empty
+rm -i $(find . -type f -empty)  

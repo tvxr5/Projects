@@ -1,0 +1,7 @@
+This ia just some random text
+I want to use it to try and 
+practice the sed command 
+that is being taught in 
+lecture 3 of CS2750 
+with professor Youseffi. 
+

@@ -1,0 +1,29 @@
+Pointers-set the pointer to someting else and set the value to another specific thing.
+
+Set Pointer, Set Value, get address
+---Lecture 13 has some info--slide 19
+
+How to use an array/ pass an array to a function and compare them to each other. 
+structure --he will write some structure as asks you how you can access the structure value
+
+if a structure is a pointer structure, how do do you access it. 
+
+nested stuctures and how you access within in the structures. 
+
+provide a function that converts a string to upper or lower case or get rid of a certain letter or substitute a letter----string manipulation. 
+lecture 15? ctype.h 
+
+bitwise operator 
+
+x += 5
+x <<= 2
+x >> 1 ;
+//bit mininpulation --lecture 15 slide 46
+
+function output from input ---concerns vit shift operators and arithmatic operator. 
+
+6 questions--have many parts
+
+how to deal with bianry files --read write open, 
+
+c code --understanding and dealing with it.      

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+find $1 -ls -type f | sort -k7nr | awk '{print $11}' | sed -r 's/^.+///'
+find $1 -size 0 -exec rm -i {} ;  

@@ -1,0 +1,168 @@
+\documentclass {article}
+\pagestyle {empty}
+\input{mydefs} \fullpage
+% the full list of all Schulte's Machine opcodes--15 Feb 1993
+\begin {document}
+{\bf Schulte's Machine Instructions}\\
+\scriptsize
+CS means Code Space; DS means Data Space\\
+integers--word long; long ints--quadword long
+
+\begin {tabular}{l|c|l|r@{--}l|l}
+NAME & CODE & ARG & OLD\_STK & NEW\_STK & ACTION\\
+\hline
+HALT  & 0x00	&		 &			 &\\
+RGETW	& 0x10	& w\_PC\_offset &  &w\_value & get CS value at offset\\
+RGETL	& 0x11	& w\_PC\_offset &  &l\_value & get CS value at offset\\
+RGETQ	& 0x12	& w\_PC\_offset &  &q\_value & get CS value at offset\\
+RGETB	& 0x13	& w\_PC\_offset &  &b\_value & get CS value at offset\\
+RPUTW	& 0x14	& w\_PC\_offset &  w\_value& & put CS value at offset\\
+RPUTL	& 0x15	& w\_PC\_offset &  l\_value& & put CS value at offset\\
+RPUTQ	& 0x16	& w\_PC\_offset &  q\_value& & put CS value at offset\\
+RPUTB	& 0x17	& w\_PC\_offset &  b\_value& & put CS value at offset\\
+RGOTO	& 0x18	& w\_PC\_offset &  & & PC = PC + offset\\
+RGOSUB& 0x19	& w\_PC\_offset &  &q\_ret\_addr & goto subroutine at offset\\
+RGOZ	& 0x1A	& w\_PC\_offset &  w\_flag& & if flag=0, goto PC + offset\\
+RPUSHA& 0x1B	& w\_PC\_offset &  &q\_c\_addr & compute CCS addr and push\\
+PUSHW	& 0x1C	& w\_value &  &w\_value & push value\\
+PUSHL	& 0x1D	& l\_value &  &l\_value & push value\\
+PUSHQ	& 0x1E	& q\_value &  &q-value & push value\\
+PUSHB	& 0x1F	& b\_value &  &b\_value & push value\\
+CGETW	& 0x20	& 		&q\_c\_addr&w\_value\\
+CGETL	& 0x21	& 		&q\_c\_addr&l\_value\\
+CGETQ	& 0x22	& 		&q\_c\_addr&q\_value\\
+CGETB	& 0x23	& 		&q\_c\_addr&b\_value\\
+CPUTW	& 0x24	& 		&q\_c\_addr$\backslash$w\_value&\\
+CPUTL	& 0x25	& 		&q\_c\_addr$\backslash$l\_value&\\
+CPUTQ	& 0x26	& 		&q\_c\_addr$\backslash$q\_value&\\
+CPUTB	& 0x27	& 		&q\_c\_addr$\backslash$b\_value&\\
+GOTO	& 0x28	& 		&q\_c\_addr&\\
+RET	& 0x28	& 		&q\_c\_addr&\\
+GOSUB	& 0x29	& 		&q\_c\_addr&q\_ret\_addr\\
+GOZ	& 0x2A	& 		&q\_c\_addr$\backslash$w\_flag&\\
+GETSW	& 0x30	& 		&w\_d\_addr&w\_value\\
+GETSL	& 0x31	& 		&w\_d\_addr&l\_value\\
+GETSQ	& 0x32	& 		&w\_d\_addr&q\_value\\
+GETSB	& 0x33	& 		&w\_d\_addr&b\_value\\
+PUTSW	& 0x34	& 		&w\_d\_addr$\backslash$w\_value&\\
+PUTSL	& 0x35	& 		&w\_d\_addr$\backslash$l\_value&\\
+PUTSQ	& 0x36	& 		&w\_d\_addr$\backslash$q\_value&\\
+PUTSB	& 0x37	& 		&w\_d\_addr$\backslash$b\_value&\\
+GETFW	& 0x38	& 		&q\_d\_addr&w\_value\\
+GETFL	& 0x39	& 		&q\_d\_addr&l\_value\\
+GETFQ	& 0x3A	& 		&q\_d\_addr&q\_value\\
+GETFB	& 0x3B	& 		&q\_d\_addr&b\_value\\
+PUTFW	& 0x3C	& 		&q\_d\_addr$\backslash$w\_value&\\
+PUTFL	& 0x3D	& 		&q\_d\_addr$\backslash$l\_value&\\
+PUTFQ	& 0x3E	& 		&q\_d\_addr$\backslash$q\_value&\\
+PUTFB	& 0x3F	& 		&q\_d\_addr$\backslash$b\_value&\\
+LGETSW& 0x40	& 		&w\_frame$\backslash$w\_offset&w\_value\\
+LGETSL& 0x41	& 		&w\_frame$\backslash$w\_offset&l\_value\\
+LGETSQ& 0x42	& 		&w\_frame$\backslash$w\_offset&q\_value\\
+LGETSB& 0x43	& 		&w\_frame$\backslash$w\_offset&b\_value\\
+LPUTSW& 0x44	& 		&w\_frame$\backslash$w\_offset$\backslash$w\_value&\\
+LPUTSL& 0x45	& 		&w\_frame$\backslash$w\_offset$\backslash$l\_value&\\
+LPUTSQ& 0x46	& 		&w\_frame$\backslash$w\_offset$\backslash$q\_value&\\
+LPUTSB& 0x47	& 		&w\_frame$\backslash$w\_offset$\backslash$b\_value&\\
+LGETFW& 0x48	& 		&w\_frame$\backslash$q\_offset&w\_value\\
+LGETFL& 0x49	& 		&w\_frame$\backslash$q\_offset&l\_value\\
+LGETFQ& 0x4A	& 		&w\_frame$\backslash$q\_offset&q\_value\\
+LGETFB& 0x4B	& 		&w\_frame$\backslash$q\_offset&b\_value\\
+LPUTFW& 0x4C	& 		&w\_frame$\backslash$q\_offset$\backslash$w\_value&\\
+LPUTFL& 0x4D	& 		&w\_frame$\backslash$q\_offset$\backslash$l\_value&\\
+LPUTFQ& 0x4E	& 		&w\_frame$\backslash$q\_offset$\backslash$q\_value&\\
+LPUTFB& 0x4F	& 		&w\_frame$\backslash$q\_offset$\backslash$b\_value&\\
+\end {tabular}
+\pagebreak
+
+\begin {tabular}{l|c|l|r@{--}l|l}
+ADDI	& 0x50	& 		&int1$\backslash$int2&int1+int2\\
+ADDL	& 0x51	& 		&l\_int1$\backslash$l\_int2&l\_int1+l\_int2\\
+ADDF	& 0x52	& 		&float1$\backslash$float2&float1+float2\\
+ADDC	& 0x53	& 		&char1$\backslash$char2&char1+char2\\
+SUBI	& 0x54	& 		&int1$\backslash$int2&int1-int2\\
+SUBL	& 0x55	& 		&l\_int1$\backslash$l\_int2&l\_int1-l\_int2\\
+SUBF	& 0x56	& 		&float1$\backslash$float2&float1-float2\\
+SUBC	& 0x57	& 		&char1$\backslash$char2&char1-char2\\
+MULI	& 0x58	& 		&int1$\backslash$int2&int1*int2\\
+MULL	& 0x59	& 		&l\_int1$\backslash$l\_int2&l\_int1*l\_int2\\
+MULF	& 0x5A	& 		&float1$\backslash$float2&float1*float2\\
+MULC	& 0x5B	& 		&char1$\backslash$char2&char1*char2\\
+DIVI	& 0x5C	& 		&int1$\backslash$int2&int1/int2\\
+DIVL	& 0x5D	& 		&l\_int1$\backslash$l\_int2&l\_int1/l\_int2\\
+DIVF	& 0x5E	& 		&float1$\backslash$float2&float1/float2\\
+DIVC	& 0x5F	& 		&char1$\backslash$char2&char1/char2\\
+ANDW	& 0x60	& 		&word1$\backslash$word2&word1\_bit\_and\_word2\\
+ANDL	& 0x61	& 		&long1$\backslash$long2&long1\_bit\_and\_long2\\
+ANDQ	& 0x62	& 		&quad1$\backslash$quad2&quad1\_bit\_and\_quad2\\
+ANDB	& 0x63	& 		&byte1$\backslash$byte2&byte1\_bit\_and\_byte2\\
+ORW	& 0x64	& 		&word1$\backslash$word2&word1\_bit\_or\_word2\\
+ORL	& 0x65	& 		&long1$\backslash$long2&long1\_bit\_or\_long2\\
+ORQ	& 0x66	& 		&quad1$\backslash$quad2&quad1\_bit\_or\_quad2\\
+ORB	& 0x67	& 		&byte1$\backslash$byte2&byte1\_bit\_or\_byte2\\
+XORW	& 0x68	& 		&word1$\backslash$word2&word1\_bit\_xor\_word2\\
+XORL	& 0x69	& 		&long1$\backslash$long2&long1\_bit\_xor\_long2\\
+XORQ	& 0x6A	& 		&quad1$\backslash$quad2&quad1\_bit\_xor\_quad2\\
+XORB	& 0x6B	& 		&byte1$\backslash$byte2&byte1\_bit\_xor\_byte2\\
+NOTW	& 0x6C	& 		&word&bit\_not\_of\_word\\
+NOTL	& 0x6D	& 		&long&bit\_not\_of\_long\\
+NOTQ	& 0x6E	& 		&quad&bit\_not\_of\_quad\\
+NOTB	& 0x6F	& 		&byte&bit\_not\_of\_byte\\
+CSFTW	& 0x70	& 		&w\_value$\backslash$w\_amt&w\_value &
+			right circ. shift\\
+CSFTL	& 0x71	& 		&l\_value$\backslash$w\_amt&l\_value &
+			right circ. shift\\
+CSFTQ	& 0x72	& 		&q\_value$\backslash$w\_amt&q\_value &
+			right circ. shift\\
+CSFTB	& 0x73	& 		&b\_value$\backslash$w\_amt&b\_value &
+			right circ. shift\\
+ASFTW	& 0x74	& 		&w\_value$\backslash$w\_amt&w\_value &
+			right end-off shift\\
+ASFTL	& 0x75	& 		&l\_value$\backslash$w\_amt&l\_value &
+			right end-off shift\\
+ASFTQ	& 0x76	& 		&q\_value$\backslash$w\_amt&q\_value &
+			right end-off shift\\
+ASFTB	& 0x77	& 		&b\_value$\backslash$w\_amt&b\_value &
+			right end-off shift\\
+TSTEQI& 0x78	& 		&int&w\_flag & if =0, push -1 else push 0\\
+TSTEQL& 0x79	& 		&l\_int&w\_flag & if =0, push -1 else push 0\\
+TSTEQF& 0x7A	& 		&float&w\_flag & if =0, push -1 else push 0\\
+TSTEQC& 0x7B	& 		&char&w\_flag & if =0, push -1 else push 0\\
+TSTLTI& 0x7C	& 		&int&w\_flag & if $<$0, push -1 else push 0\\
+TSTLTL& 0x7D	& 		&l\_int&w\_flag & if $<$0, push -1 else push 0\\
+TSTLTF& 0x7E	& 		&float&w\_flag & if $<$0, push -1 else push 0\\
+TSTLTC& 0x7F	& 		&char&w\_flag & if $<$0, push -1 else push 0\\
+DUPW	& 0x80	& 		&w\_value&w\_value$\backslash$w\_value & duplicate\\
+DUPL	& 0x81	& 		&l\_value&l\_value$\backslash$l\_value & duplicate\\
+DUPQ	& 0x82	& 		&q\_value&q\_value$\backslash$q\_value & duplicate\\
+DUPO	& 0x83	& 		&o\_value&o\_value$\backslash$o\_value & duplicate\\
+SWAPW	& 0x84	& 		&word1$\backslash$word2&word2$\backslash$word1 & swap\\
+SWAPL	& 0x85	& 		&long1$\backslash$long2&long2$\backslash$long1 & swap\\
+SWAPQ	& 0x86	& 		&quad1$\backslash$quad2&quad2$\backslash$quad1 & swap\\
+SWAPO	& 0x87	& 		&octa1$\backslash$octa2&octa2$\backslash$octa1 & swap\\
+CHSPS	& 0x88	& 		&w\_value & & add value to SP\\
+CHSPF	& 0x89	& 		&q\_value & & add value to SP\\
+NEWFR	& 0x8A	& w\_frame &  &q\_ofp & start new frame\\
+RESFR	& 0x8B	& w\_frame &  stuff$\backslash$q\_ofp$\backslash$local&
+			stuff \& exit current frame\\
+ADRD  & 0x90	&		& q\_d\_addr & q\_universal\_addr &
+			convert data addr to gen'l addr\\
+CVTIL	& 0x91	&		& integer & long\_integer & convert integer to long\\
+CVTIF	& 0x92	&		& integer & float & convert integer to float\\
+CVTIC	& 0x93	&		& integer & char & convert integer to character\\
+CVTLI	& 0x94	&		& long\_integer & integer & convert long to integer\\
+ZEXWQ	& 0x95	&		& w\_value & q\_value & extend word to quad with zeros\\
+CVTLF	& 0x96	&		& long\_integer & float & convert long to float\\
+CVTLC	& 0x97	&		& long\_integer & char & convert long to character\\
+CVTFI	& 0x98	&		& float & integer & convert float to integer\\
+CVTFL	& 0x99	&		& float & long\_integer & convert float to long\\
+ADRC	& 0x9A	&		& q\_d\_addr & q\_universal\_addr &
+			convert code addr to gen'l addr\\
+CVTFC	& 0x9B	&		& float & char & convert float to character\\
+CVTCI	& 0x9C	&		& char & integer & convert character to integer\\
+CVTCL	& 0x9D	&		& char & long\_integer & convert character to long\\
+CVTCF	& 0x9E	&		& char & float & convert character to float\\
+ADRF  & 0x9F	&		& w\_frame $\backslash$ q\_offset & q\_universal\_addr &
+			convert frame addr to gen'l addr\\
+\end {tabular}
+\end {document}

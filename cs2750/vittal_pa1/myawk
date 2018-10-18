@@ -1,0 +1,10 @@
+BEGIN { print("<< Start of file >>"); }
+
+NR>=3 && NR<=5 {
+    for (i = NF; i >= 1; i--)
+        printf "%s ", $i;
+    print ""; 
+    wordCount += NF;
+}
+
+END { printf "<< End of file: wordCount = %d >>\n", wordCount }

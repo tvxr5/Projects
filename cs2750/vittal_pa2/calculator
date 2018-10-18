@@ -1,0 +1,59 @@
+#!/bin/bash
+
+operator=$1  #initiaize  the the 3 paramerters
+num1=$2
+num2=$3
+
+isNumber='^[0-9]+$'   #states the valid values considered a number
+isOperator='^[a, s, m, d]+$' #states the values considered an operator
+
+# Addition Fuction
+add(){
+  sum=$((num1+num2))
+  echo $num1 + $num2 = $sum
+}
+
+# Subtraction Fucntion
+subtract(){
+  diff=$((num1-num2))
+  echo $num1 - $num2 = $diff
+}
+
+# Multiplication Function
+multiply(){
+  prod=$((num1*num2))
+  echo $num1 x $num2 = $prod
+}
+
+# division function
+divide(){
+  quot=$((num1/num2))
+  echo $num1 / $num2 = $quot
+}
+
+
+if [[ "$#" < 3 ]]  # checks if 3 parameters have been entered
+  then
+    echo "You have to enter all 3 parameters, a letter ,number1, and number2"
+    exit
+elif ! [[ $operator =~ $isOperator ]] || ! [[ $num1 =~ $isNumber ]] || ! [[ $num2 =~ $isNumber ]] # Checks the values of the parameters to they match the definitions
+  then
+    echo "Incorrect Input format, You have to enter all 3 parameters, with the correct operators and numbers in a letter, number1, and number2 format" # Error Check
+    exit
+fi
+
+if [[ "$operator" = "a" ]] # checks for valid operator value, then calls fuction based on valid operator value. 
+  then
+    add
+elif [[ "$operator" = "s" ]]
+  then
+    subtract
+elif [[ "$operator" = "m" ]]
+  then
+    multiply
+elif [[ "$operator" = "d" ]]
+  then
+    divide
+else
+  echo "Incorrect Input format, You have to enter all 3 parameters, with the correct operators and numbers in a letter, number1, and number2 format" #Second Error Check
+fi
